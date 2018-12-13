@@ -6,13 +6,14 @@
 
 ## General behaviour
 RETURN_CODE=3                # UNKNOWN : Status if anything goes wrong past this line.
-ERROR_PREFIX=''              # No prefix for error message by default
-OK_PREFIX=''                 # No prefix for OK message by default
+ERROR_PREFIX=''              # No prefix for error message by default.
+OK_PREFIX=''                 # No prefix for OK message by default.
 WARNING=10
 CRITICAL=20
-VALUE='wa'
+VALUE='wa'                   # IO wait % is the default mode if unspecified.
 DELAY=5
 UNIT=''
+SILENT='false'               # false: Check the returned value against the thresholds.
 
 # What pager is available?
 if env less 2>/dev/null
@@ -32,7 +33,7 @@ Only one value is checked at once, so is present in the performance data.
 
 The checked value is common between GNU/Linux and AIX hosts. As an example, "in" matches the "bi" column on GNU/Linux hosts and the "fi" column on AIX hosts.
 
-Usage: $(basename "$0") -w <warning threshold> -c <critical threshold> [-v <value>] [-d <delay>]
+Usage: $(basename "$0") [-h] -w <warning threshold> -c <critical threshold> [-v <value>] [-d <delay>] [-S]
 
  -w/--warning      <threshold>  Warning threshold.
  
@@ -48,6 +49,10 @@ Usage: $(basename "$0") -w <warning threshold> -c <critical threshold> [-v <valu
  -d/--delay        <delay>      Total delay in second. Probes are done every second.
                                 So a delay of N means that the returned value is an average on N probes.
                                 Default is 5.
+                
+ -h/--help                      Show this help end exit with an UNKNOWN status. 
+
+ -S/--silent                    Do not check the return value against the thresholds and always return OK (0). 
 
 EOF
 }
@@ -62,12 +67,14 @@ for arg in "${@}"; do
      ("--critical")  set -- "${@}" "-c" ;;
      ("--value")     set -- "${@}" "-v" ;;
      ("--delay")     set -- "${@}" "-d" ;;
+     ("--help")      set -- "${@}" "-h" ;;
+     ("--silent")    set -- "${@}" "-S" ;;
      (*)             set -- "${@}" "${arg}"
   esac
 done;
 
 ## Parse command line options
-while getopts "w:c:v:d:" opt; do
+while getopts "w:c:v:d:hS" opt; do
     case "${opt}" in
         (w)
             WARNING=${OPTARG}
@@ -80,7 +87,15 @@ while getopts "w:c:v:d:" opt; do
             ;;            
         (d)
             DELAY="${OPTARG}"
-            ;;            
+            ;;
+        (S)
+            SILENT='true'
+            ;;
+        (h)
+            help_message;
+            RETURN_CODE=3
+            exit "${RETURN_CODE}";
+            ;;  
         (\?)
             printf "%s\n" "Unsupported option…";
             help_message;
@@ -168,4 +183,8 @@ esac
 
 
 printf "%s\n" "${RETURN_MESSAGE}|$PERFDATA"
-exit ${RETURN_CODE}
+if $SILENT; then
+    exit 0
+else
+    exit ${RETURN_CODE}
+fi
