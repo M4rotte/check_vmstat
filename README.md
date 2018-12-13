@@ -6,7 +6,7 @@ Only one value is checked at once, so is present in the performance data.
 
 The checked value is common between GNU/Linux and AIX hosts. As an example, "in" matches the "bi" column on GNU/Linux hosts and the "fi" column on AIX hosts.
 
-Usage: check_vmstat.sh -w <warning threshold> -c <critical threshold> [-v <value>] [-d <delay>]
+Usage: check_vmstat.sh [-h] -w <warning threshold> -c <critical threshold> [-v <value>] [-d <delay>] [-S]
 
  -w/--warning      <threshold>  Warning threshold.
  
@@ -15,11 +15,14 @@ Usage: check_vmstat.sh -w <warning threshold> -c <critical threshold> [-v <value
  -v/--value        <value>      Value monitored. Default is "wa" (IOWait)
                                 Supported values are: wa,in,out
                                 
-* wa  : CPU IO Wait % (wa)
-* in  : blk/s in on Linux (bi), file page-ins/s on AIX (fi)
-* out : blk/s out on Linux (bo), file page-outs/s on AIX (fo)
+                                 - wa  : CPU IO Wait % (wa)
+                                 - in  : blk/s in on Linux (bi), file page-ins/s on AIX (fi)
+                                 - out : blk/s out on Linux (bo), file page-outs/s on AIX (fo)
                                 
  -d/--delay        <delay>      Total delay in second. Probes are done every second.
                                 So a delay of N means that the returned value is an average on N probes.
                                 Default is 5.
+                
+ -h/--help                      Show this help end exit with an UNKNOWN status. 
 
+ -S/--silent                    Do not check the return value against the thresholds and always return OK (0).
